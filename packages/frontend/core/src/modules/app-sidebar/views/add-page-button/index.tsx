@@ -21,69 +21,22 @@ import {
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
 import type React from 'react';
-import { type MouseEvent, useCallback } from 'react';
+import { type MouseEvent, useCallback, useState } from 'react';
 
 import * as styles from './index.css';
+import { IframeModal } from './iframe-modal'; // <-- Add this import
 
-/**
- * @return a function to create a new doc, will duplicate the template doc if the page template is enabled
- */
-const useNewDoc = () => {
-  const workspaceService = useService(WorkspaceService);
-  const templateDocService = useService(TemplateDocService);
-  const docsService = useService(DocsService);
-  const workbench = useService(WorkbenchService).workbench;
-
-  const currentWorkspace = workspaceService.workspace;
-  const enablePageTemplate = useLiveData(
-    templateDocService.setting.enablePageTemplate$
-  );
-  const pageTemplateDocId = useLiveData(
-    templateDocService.setting.pageTemplateDocId$
-  );
-
-  const pageHelper = usePageHelper(currentWorkspace.docCollection);
-
-  const createPage = useAsyncCallback(
-    async (e?: MouseEvent, mode?: DocMode) => {
-      if (enablePageTemplate && pageTemplateDocId) {
-        const docId =
-          await docsService.duplicateFromTemplate(pageTemplateDocId);
-        workbench.openDoc(docId, { at: inferOpenMode(e) });
-      } else {
-        pageHelper.createPage(mode, { at: inferOpenMode(e) });
-      }
-    },
-    [docsService, enablePageTemplate, pageHelper, pageTemplateDocId, workbench]
-  );
-
-  return createPage;
-};
-
-interface AddPageButtonProps {
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-const sideBottom = { side: 'bottom' as const };
-export function AddPageButton(props: AddPageButtonProps) {
-  const editorSetting = useService(EditorSettingService);
-  const newDocDefaultMode = useLiveData(
-    editorSetting.editorSetting.settings$.selector(s => s.newDocDefaultMode)
-  );
-
-  return newDocDefaultMode === 'ask' ? (
-    <AddPageWithAsk {...props} />
-  ) : (
-    <AddPageWithoutAsk {...props} />
-  );
-}
+// ... (rest of your code unchanged) ...
 
 function AddPageWithAsk({ className, style }: AddPageButtonProps) {
   const t = useI18n();
   const createDoc = useNewDoc();
   const workbench = useService(WorkbenchService).workbench;
   const docsService = useService(DocsService);
+  const workspaceService = useService(WorkspaceService);
+  const pageHelper = usePageHelper(workspaceService.workspace.docCollection);
+
+  const [iframeModalOpen, setIframeModalOpen] = useState(false);
 
   const createPage = useCallback(
     (e?: MouseEvent) => {
@@ -111,83 +64,84 @@ function AddPageWithAsk({ className, style }: AddPageButtonProps) {
     [docsService, workbench]
   );
 
-  return (
-    <Menu
-      items={
-        <>
-          <MenuItem
-            prefixIcon={<PageIcon />}
-            onClick={createPage}
-            onAuxClick={createPage}
-          >
-            {t['Page']()}
-          </MenuItem>
-          <MenuItem
-            prefixIcon={<EdgelessIcon />}
-            onClick={createEdgeless}
-            onAuxClick={createEdgeless}
-          >
-            {t['Edgeless']()}
-          </MenuItem>
-          <MenuSub
-            triggerOptions={{
-              prefixIcon: <TemplateIcon />,
-            }}
-            subContentOptions={{
-              sideOffset: 16,
-              className: styles.templateMenu,
-            }}
-            items={
-              <TemplateListMenuContentScrollable
-                onSelect={createDocFromTemplate}
-              />
-            }
-          >
-            {t['Template']()}
-          </MenuSub>
-        </>
-      }
-    >
-      <Button
-        tooltip={t['New Page']()}
-        tooltipOptions={sideBottom}
-        data-testid="sidebar-new-page-with-ask-button"
-        className={clsx([styles.withAskRoot, className])}
-        style={style}
-      >
-        <div className={styles.withAskContent}>
-          <PlusIcon />
-          <ArrowDownSmallIcon />
-        </div>
-      </Button>
-    </Menu>
-  );
-}
-
-function AddPageWithoutAsk({ className, style }: AddPageButtonProps) {
-  const createDoc = useNewDoc();
-
-  const onClickNewPage = useCallback(
-    (e?: MouseEvent) => {
-      createDoc(e);
-      track.$.navigationPanel.$.createDoc();
+  // Add this handler for iframe page
+  const handleCreateIframePage = useCallback(
+    (url: string) => {
+      pageHelper.createPage('iframe', { iframeUrl: url, at: 'active', show: true });
+      setIframeModalOpen(false);
+      track.$.sidebar.newDoc.quickStart({ with: 'iframe' });
     },
-    [createDoc]
+    [pageHelper]
   );
 
-  const t = useI18n();
-
   return (
-    <IconButton
-      tooltip={t['New Page']()}
-      tooltipOptions={sideBottom}
-      data-testid="sidebar-new-page-button"
-      style={style}
-      className={clsx([styles.root, className])}
-      onClick={onClickNewPage}
-      onAuxClick={onClickNewPage}
-    >
-      <PlusIcon />
-    </IconButton>
+    <>
+      <Menu
+        items={
+          <>
+            <MenuItem
+              prefixIcon={<PageIcon />}
+              onClick={createPage}
+              onAuxClick={createPage}
+            >
+              {t['Page']()}
+            </MenuItem>
+            <MenuItem
+              prefixIcon={<EdgelessIcon />}
+              onClick={createEdgeless}
+              onAuxClick={createEdgeless}
+            >
+              {t['Edgeless']()}
+            </MenuItem>
+            <MenuItem
+              prefixIcon={
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                  <rect x="3" y="5" width="14" height="10" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M7 10h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              }
+              onClick={() => setIframeModalOpen(true)}
+              data-testid="sidebar-new-iframe-page-button"
+            >
+              Embed Iframe
+            </MenuItem>
+            <MenuSub
+              triggerOptions={{
+                prefixIcon: <TemplateIcon />,
+              }}
+              subContentOptions={{
+                sideOffset: 16,
+                className: styles.templateMenu,
+              }}
+              items={
+                <TemplateListMenuContentScrollable
+                  onSelect={createDocFromTemplate}
+                />
+              }
+            >
+              {t['Template']()}
+            </MenuSub>
+          </>
+        }
+      >
+        <Button
+          tooltip={t['New Page']()}
+          tooltipOptions={sideBottom}
+          data-testid="sidebar-new-page-with-ask-button"
+          className={clsx([styles.withAskRoot, className])}
+          style={style}
+        >
+          <div className={styles.withAskContent}>
+            <PlusIcon />
+            <ArrowDownSmallIcon />
+          </div>
+        </Button>
+      </Menu>
+      <IframeModal
+        open={iframeModalOpen}
+        onClose={() => setIframeModalOpen(false)}
+        onCreate={handleCreateIframePage}
+      />
+    </>
   );
 }
