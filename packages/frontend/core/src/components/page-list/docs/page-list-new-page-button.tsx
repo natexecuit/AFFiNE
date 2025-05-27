@@ -10,6 +10,7 @@ export const PageListNewPageButton = ({
   onCreateDoc,
   onCreatePage,
   onCreateEdgeless,
+  onCreateIframePage, // Add this line
   onImportFile,
   ...props
 }: PropsWithChildren<{
@@ -18,6 +19,7 @@ export const PageListNewPageButton = ({
   onCreateDoc: (e?: MouseEvent) => void;
   onCreatePage: (e?: MouseEvent) => void;
   onCreateEdgeless: (e?: MouseEvent) => void;
+  onCreateIframePage?: (iframeUrl: string) => void; // Add this line
   onImportFile?: (e?: MouseEvent) => void;
 }> &
   React.HTMLAttributes<HTMLDivElement>) => {
@@ -29,6 +31,7 @@ export const PageListNewPageButton = ({
         createNewDoc={onCreateDoc}
         createNewEdgeless={onCreateEdgeless}
         createNewPage={onCreatePage}
+        createNewIframePage={onCreateIframePage} // Add this line
       >
         <div className={styles.newPageButtonLabel}>{children}</div>
       </NewPageButton>
