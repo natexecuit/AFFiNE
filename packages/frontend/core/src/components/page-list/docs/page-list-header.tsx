@@ -87,6 +87,14 @@ export const PageListHeader = () => {
     });
   }, [workspaceDialogService, handleOpenDocs]);
 
+  // --- IFRAME PAGE CREATION HANDLER ---
+  const onCreateIframePage = useCallback(
+    (iframeUrl: string) => {
+      createPage('iframe', { iframeUrl });
+    },
+    [createPage]
+  );
+
   return (
     <div className={styles.docListHeader}>
       <div className={styles.docListHeaderTitle}>{title}</div>
@@ -98,6 +106,7 @@ export const PageListHeader = () => {
           createPage('page' as DocMode, { at: inferOpenMode(e) })
         }
         onCreateDoc={e => createPage(undefined, { at: inferOpenMode(e) })}
+        onCreateIframePage={onCreateIframePage}
         onImportFile={onImportFile}
       >
         <div className={styles.buttonText}>{t['New Page']()}</div>
@@ -179,6 +188,14 @@ export const CollectionPageListHeader = ({
     onConfirmAddDocument(createPage);
   }, [createPage, onConfirmAddDocument]);
 
+  // ---- IFRAME SUPPORT ----
+  const onCreateIframePage = useCallback(
+    (iframeUrl: string) => {
+      onConfirmAddDocument(() => createPage('iframe', { iframeUrl }));
+    },
+    [createPage, onConfirmAddDocument]
+  );
+
   return (
     <div className={styles.docListHeader}>
       <div className={styles.docListHeaderTitle}>
@@ -198,6 +215,7 @@ export const CollectionPageListHeader = ({
           onCreateDoc={onCreateDoc}
           onCreateEdgeless={onCreateEdgeless}
           onCreatePage={onCreatePage}
+          onCreateIframePage={onCreateIframePage}
         >
           <div className={styles.buttonText}>{t['New Page']()}</div>
         </PageListNewPageButton>
