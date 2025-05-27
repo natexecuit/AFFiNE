@@ -7,13 +7,13 @@ import type { MouseEvent, PropsWithChildren } from 'react';
 import { useCallback, useState } from 'react';
 
 import * as styles from './new-page-button.css';
-import { IframeModal } from './iframe-modal'; // Add this import
+import { IframeModal } from './iframe-modal';
 
 type NewPageButtonProps = {
   createNewDoc: (e?: MouseEvent) => void;
   createNewPage: (e?: MouseEvent) => void;
   createNewEdgeless: (e?: MouseEvent) => void;
-  createNewIframePage?: (iframeUrl: string) => void; // Add this
+  createNewIframePage?: (iframeUrl: string) => void;
   importFile?: () => void;
   size?: 'small' | 'default';
 };
@@ -21,7 +21,7 @@ type NewPageButtonProps = {
 export const CreateNewPagePopup = ({
   createNewPage,
   createNewEdgeless,
-  createNewIframePage, // Add this
+  createNewIframePage,
   importFile,
 }: NewPageButtonProps) => {
   const t = useI18n();
@@ -92,7 +92,7 @@ export const NewPageButton = ({
   createNewDoc,
   createNewPage,
   createNewEdgeless,
-  createNewIframePage, // Add this
+  createNewIframePage,
   importFile,
   size,
   children,
