@@ -7,11 +7,13 @@ import type { MouseEvent, PropsWithChildren } from 'react';
 import { useCallback, useState } from 'react';
 
 import * as styles from './new-page-button.css';
+import { IframeModal } from './iframe-modal'; // Add this import
 
 type NewPageButtonProps = {
   createNewDoc: (e?: MouseEvent) => void;
   createNewPage: (e?: MouseEvent) => void;
   createNewEdgeless: (e?: MouseEvent) => void;
+  createNewIframePage?: (iframeUrl: string) => void; // Add this
   importFile?: () => void;
   size?: 'small' | 'default';
 };
@@ -19,9 +21,17 @@ type NewPageButtonProps = {
 export const CreateNewPagePopup = ({
   createNewPage,
   createNewEdgeless,
+  createNewIframePage, // Add this
   importFile,
 }: NewPageButtonProps) => {
   const t = useI18n();
+  const [iframeModalOpen, setIframeModalOpen] = useState(false);
+
+  const handleCreateIframePage = (url: string) => {
+    createNewIframePage?.(url);
+    setIframeModalOpen(false);
+  };
+
   return (
     <div
       style={{
@@ -47,6 +57,23 @@ export const CreateNewPagePopup = ({
         onAuxClick={createNewEdgeless}
         data-testid="new-edgeless-button-in-all-page"
       />
+      <BlockCard
+        title="Embed Iframe"
+        desc="Embed an external website as a page"
+        right={
+          <svg width="20" height="20" viewBox="0 0 20 20">
+            <rect x="3" y="5" width="14" height="10" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
+            <path d="M7 10h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        }
+        onClick={() => setIframeModalOpen(true)}
+        data-testid="new-iframe-page-button-in-all-page"
+      />
+      <IframeModal
+        open={iframeModalOpen}
+        onClose={() => setIframeModalOpen(false)}
+        onCreate={handleCreateIframePage}
+      />
       {importFile ? (
         <BlockCard
           title={t['com.affine.new_import']()}
@@ -65,6 +92,7 @@ export const NewPageButton = ({
   createNewDoc,
   createNewPage,
   createNewEdgeless,
+  createNewIframePage, // Add this
   importFile,
   size,
   children,
@@ -101,6 +129,15 @@ export const NewPageButton = ({
       [createNewEdgeless]
     );
 
+  const handleCreateNewIframePage = useCallback(
+    (iframeUrl: string) => {
+      createNewIframePage?.(iframeUrl);
+      setOpen(false);
+      track.allDocs.header.actions.createDoc({ mode: 'iframe' });
+    },
+    [createNewIframePage]
+  );
+
   const handleImportFile = useCallback(() => {
     importFile?.();
     setOpen(false);
@@ -113,6 +150,7 @@ export const NewPageButton = ({
           createNewDoc={handleCreateNewDoc}
           createNewPage={handleCreateNewPage}
           createNewEdgeless={handleCreateNewEdgeless}
+          createNewIframePage={handleCreateNewIframePage}
           importFile={importFile ? handleImportFile : undefined}
         />
       }
