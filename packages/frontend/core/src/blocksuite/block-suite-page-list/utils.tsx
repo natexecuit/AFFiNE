@@ -4,6 +4,7 @@ import { AppSidebarService } from '@affine/core/modules/app-sidebar';
 import { DocsService } from '@affine/core/modules/doc';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { getAFFiNEWorkspaceSchema } from '@affine/core/modules/workspace';
+// ---- Make sure DocMode includes 'iframe' ----
 import { type DocMode } from '@blocksuite/affine/model';
 import type { Workspace } from '@blocksuite/affine/store';
 import { useServices } from '@toeverything/infra';
@@ -19,14 +20,14 @@ export const usePageHelper = (docCollection: Workspace) => {
   const docRecordList = docsService.list;
   const appSidebar = appSidebarService.sidebar;
 
-  // Modified to support iframeUrl and 'iframe' mode
+  // --- Main creation function ---
   const createPageAndOpen = useCallback(
     (
-      mode?: DocMode,
+      mode?: DocMode, // 'iframe' is valid here
       options: {
         at?: 'new-tab' | 'tail' | 'active';
         show?: boolean;
-        iframeUrl?: string; // <-- Add this line
+        iframeUrl?: string; // <-- Accept iframeUrl here
       } = {
         at: 'active',
         show: true,
@@ -34,7 +35,7 @@ export const usePageHelper = (docCollection: Workspace) => {
     ) => {
       appSidebar.setHovering(false);
 
-      // Support 'iframe' mode with iframeUrl
+      // --- Support 'iframe' mode with iframeUrl ---
       let page;
       if (mode === 'iframe' && options.iframeUrl) {
         page = docsService.createDoc({ mode: 'iframe', iframeUrl: options.iframeUrl });
@@ -127,7 +128,7 @@ export const usePageHelper = (docCollection: Workspace) => {
         options?: {
           at?: 'new-tab' | 'tail' | 'active';
           show?: boolean;
-          iframeUrl?: string; // <-- Add this line so consumers can pass iframeUrl
+          iframeUrl?: string; // <-- Accept iframeUrl in options
         }
       ) => createPageAndOpen(mode, options),
       createEdgeless: createEdgelessAndOpen,
