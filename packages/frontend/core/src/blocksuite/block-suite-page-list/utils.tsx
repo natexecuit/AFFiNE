@@ -19,19 +19,30 @@ export const usePageHelper = (docCollection: Workspace) => {
   const docRecordList = docsService.list;
   const appSidebar = appSidebarService.sidebar;
 
+  // Modified to support iframeUrl and 'iframe' mode
   const createPageAndOpen = useCallback(
     (
       mode?: DocMode,
       options: {
         at?: 'new-tab' | 'tail' | 'active';
         show?: boolean;
+        iframeUrl?: string; // <-- Add this line
       } = {
         at: 'active',
         show: true,
       }
     ) => {
       appSidebar.setHovering(false);
-      const page = docsService.createDoc();
+
+      // Support 'iframe' mode with iframeUrl
+      let page;
+      if (mode === 'iframe' && options.iframeUrl) {
+        page = docsService.createDoc({ mode: 'iframe', iframeUrl: options.iframeUrl });
+      } else if (mode) {
+        page = docsService.createDoc({ mode });
+      } else {
+        page = docsService.createDoc();
+      }
 
       if (mode) {
         docRecordList.doc$(page.id).value?.setPrimaryMode(mode);
@@ -116,6 +127,7 @@ export const usePageHelper = (docCollection: Workspace) => {
         options?: {
           at?: 'new-tab' | 'tail' | 'active';
           show?: boolean;
+          iframeUrl?: string; // <-- Add this line so consumers can pass iframeUrl
         }
       ) => createPageAndOpen(mode, options),
       createEdgeless: createEdgelessAndOpen,
