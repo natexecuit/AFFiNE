@@ -81,6 +81,14 @@ export const CollectionListHeader = ({
     onConfirmAddDocument(createPage);
   }, [createPage, onConfirmAddDocument]);
 
+  // ---- IFRAME SUPPORT ----
+  const onCreateIframePage = useCallback(
+    (iframeUrl: string) => {
+      onConfirmAddDocument(() => createPage('iframe', { iframeUrl }));
+    },
+    [createPage, onConfirmAddDocument]
+  );
+
   return (
     <header className={styles.collectionHeader}>
       <div className={styles.breadcrumb}>
@@ -104,6 +112,7 @@ export const CollectionListHeader = ({
           onCreateDoc={onCreateDoc}
           onCreateEdgeless={onCreateEdgeless}
           onCreatePage={onCreatePage}
+          onCreateIframePage={onCreateIframePage} {/* <-- this line added */}
         >
           <div className={styles.newPageButtonText}>{t['New Page']()}</div>
         </PageListNewPageButton>
