@@ -66,6 +66,14 @@ export const AllPageHeader = ({
     });
   }, [workspaceDialogService, handleOpenDocs]);
 
+  // --- IFRAME PAGE CREATION HANDLER ---
+  const onCreateIframePage = useCallback(
+    (iframeUrl: string) => {
+      createPage('iframe', { iframeUrl });
+    },
+    [createPage]
+  );
+
   return (
     <Header
       left={<ExplorerNavigation active={'docs'} />}
@@ -80,6 +88,7 @@ export const AllPageHeader = ({
             onCreateEdgeless={e => createEdgeless({ at: inferOpenMode(e) })}
             onCreatePage={e => createPage('page', { at: inferOpenMode(e) })}
             onCreateDoc={e => createPage(undefined, { at: inferOpenMode(e) })}
+            onCreateIframePage={onCreateIframePage} {/* <-- add this line */}
             onImportFile={onImportFile}
           >
             <PlusIcon />
