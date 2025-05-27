@@ -84,6 +84,14 @@ export const AllDocsHeader = ({
     [displayPreference, onDisplayPreferenceChange]
   );
 
+  // --- IFRAME PAGE CREATION HANDLER ---
+  const onCreateIframePage = useCallback(
+    (iframeUrl: string) => {
+      createPage('iframe', { iframeUrl });
+    },
+    [createPage]
+  );
+
   return (
     <div className={styles.header}>
       <ExplorerNavigation active="docs" />
@@ -103,6 +111,7 @@ export const AllDocsHeader = ({
           onCreateEdgeless={e => createEdgeless({ at: inferOpenMode(e) })}
           onCreatePage={e => createPage('page', { at: inferOpenMode(e) })}
           onCreateDoc={e => createPage(undefined, { at: inferOpenMode(e) })}
+          onCreateIframePage={onCreateIframePage} // <-- add this line
           onImportFile={onImportFile}
           data-testid="new-page-button-trigger"
         >
